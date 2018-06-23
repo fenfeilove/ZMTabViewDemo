@@ -18,12 +18,13 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 
+@protocol ZMTabBarDelegate;
 IB_DESIGNABLE
 @interface ZMTabBar : NSView
 @property(assign)IBInspectable BOOL showAddItem;
-@property(readonly)NSUInteger itemCount;
+@property(readonly)NSUInteger numberOfTabItems;
 @property(readonly,strong)NSButton* addItem;
-
+@property(weak)IBOutlet id<ZMTabBarDelegate> delegate;
 @property(weak)IBOutlet id<ZMTabBarStyle> tabBarStyle;
 @property(copy)IBInspectable NSString* tabBarStyleName;
 
@@ -37,5 +38,20 @@ IB_DESIGNABLE
 - (void)selectTabItem:(nullable ZMTabItem*)item;
 - (void)selectTabItemAtIndex:(NSInteger)index;
 - (void)selectTabItemWithIdentifier:(id)identifier;
+
+- (IBAction)selectFirstTabViewItem:(nullable id)sender;
+- (IBAction)selectLastTabViewItem:(nullable id)sender;
+- (IBAction)selectNextTabViewItem:(nullable id)sender;
+- (IBAction)selectPreviousTabViewItem:(nullable id)sender;
+@property(nullable, readonly, strong) ZMTabItem *selectedTabItem;
+@property(readonly, copy) NSArray<__kindof ZMTabItem *> *tabItems;
+@end
+
+@protocol ZMTabBarDelegate <NSObject>
+@optional
+- (BOOL)tabBar:(ZMTabBar *)tabView shouldSelectTabItem:(nullable ZMTabItem *)tabViewItem;
+- (void)tabBar:(ZMTabBar *)tabView willSelectTabItem:(nullable ZMTabItem *)tabViewItem;
+- (void)tabBar:(ZMTabBar *)tabView didSelectTabItem:(nullable ZMTabItem *)tabViewItem;
+- (void)tabBarDidChangeNumberOfTabViewItems:(ZMTabBar *)tabView;
 @end
 NS_ASSUME_NONNULL_END

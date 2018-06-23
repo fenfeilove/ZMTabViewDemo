@@ -25,6 +25,7 @@
     NSMutableArray<ZMTabItemCell*>* _itemCells;
 }
 @property(strong)id<ZMTabBarStyle> style;
+@property(nullable, readwrite, strong) ZMTabItemCell *selectedTabItemCell;
 @end
 
 @implementation ZMTabBar
@@ -78,13 +79,17 @@
     ZMTabItemCell* cell = [[ZMTabItemCell alloc] init];
     [cell setTabBar:self];
     [cell setTabItem:item];
-    [self insertTabItemCell:cell atIndex:index];
+    [cell setTarget:self];
+    [cell setAction:@selector(onTabItemCellClick:)];
+    [self _insertTabItemCell:cell atIndex:index];
 }
-- (void)insertTabItemCell:(ZMTabItemCell*)cell atIndex:(NSUInteger)index{
+- (void)_insertTabItemCell:(ZMTabItemCell*)cell atIndex:(NSUInteger)index{
     if(!cell || index > _itemCells.count)
         return;
     [_itemCells insertObject:cell atIndex:index];
     [self addSubview:cell];
+    [self.window recalculateKeyViewLoop];
+    [self selectTabItemAtIndex:index];
     [self relayout];
 }
 
@@ -96,12 +101,15 @@
             break;
         }
     }
-    [self removeTabItemCell:theCell];
+    [self _removeTabItemCell:theCell];
 }
-- (void)removeTabItemCell:(ZMTabItemCell*)cell{
+- (void)_removeTabItemCell:(ZMTabItemCell*)cell{
     if(cell){
+        cell.target = nil;
+        cell.action = nil;
         [cell removeFromSuperview];
         [_itemCells removeObject:cell];
+        [self.window recalculateKeyViewLoop];
         [self relayout];
     }
 }
@@ -159,27 +167,112 @@
 
 #pragma mark - select
 - (void)selectTabItem:(nullable ZMTabItem*)item{
-    NSInteger index =  [_itemCells indexOfObjectPassingTest:^BOOL(ZMTabItemCell* cell, NSUInteger idx, BOOL *stop) {
-        if(cell.tabItem == item){
-            return YES;
+    __block ZMTabItemCell *cell = nil;
+    [_itemCells enumerateObjectsUsingBlock:^(ZMTabItemCell * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if(obj.tabItem == item){
+            cell = obj;
+            *stop = YES;
         }
-        return NO;
     }];
-    [self selectTabItemAtIndex:index];
+    [self _selectTabItemCell:cell];
 }
 - (void)selectTabItemAtIndex:(NSInteger)index{
-    
+    ZMTabItemCell* cell = nil;
+    if(index>=0 && index<_itemCells.count)
+        cell = [_itemCells objectAtIndex:index];
+    [self _selectTabItemCell:cell];
 }
 - (void)selectTabItemWithIdentifier:(id)identifier{
+    __block ZMTabItemCell* cell = nil;
+    [_itemCells enumerateObjectsUsingBlock:^(ZMTabItemCell * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if([obj.tabItem.identifier isEqual:obj]){
+            cell = obj;
+            *stop = YES;
+        }
+    }];
+    [self _selectTabItemCell:cell];
+}
+
+- (void)_selectTabItemCell:(ZMTabItemCell*)cell{
+    if(self.delegate && [self.delegate respondsToSelector:@selector(tabBar:shouldSelectTabItem:)]){
+        if(![self.delegate tabBar:self shouldSelectTabItem:cell.tabItem])
+            return;
+    }
+    [_itemCells enumerateObjectsUsingBlock:^(ZMTabItemCell * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if(obj != cell){
+            obj.selected = NO;
+        }
+    }];
+    if(self.delegate && [self.delegate respondsToSelector:@selector(tabBar:willSelectTabItem:)]){
+        [self.delegate tabBar:self willSelectTabItem:cell.tabItem];
+    }
+    cell.selected = YES;
+    self.selectedTabItemCell = cell;
+    if(self.delegate && [self.delegate respondsToSelector:@selector(tabBar:didSelectTabItem:)]){
+        [self.delegate tabBar:self didSelectTabItem:cell.tabItem];
+    }
+}
+
+- (IBAction)selectFirstTabViewItem:(nullable id)sender{
+    [self _selectTabItemCell:_itemCells.firstObject];
+}
+- (IBAction)selectLastTabViewItem:(nullable id)sender{
+    [self _selectTabItemCell:_itemCells.lastObject];
+}
+- (IBAction)selectNextTabViewItem:(nullable id)sender{
     NSInteger index =  [_itemCells indexOfObjectPassingTest:^BOOL(ZMTabItemCell* cell, NSUInteger idx, BOOL *stop) {
-        if([cell.tabItem.identifier isEqual:identifier]){
+        if(cell.tabItem == self.selectedTabItem){
             return YES;
         }
         return NO;
     }];
-    [self selectTabItemAtIndex:index];
+    if(index+1<_itemCells.count){
+        [self selectTabItemAtIndex:index+1];
+    }
 }
-
+- (IBAction)selectPreviousTabViewItem:(nullable id)sender{
+    NSInteger index =  [_itemCells indexOfObjectPassingTest:^BOOL(ZMTabItemCell* cell, NSUInteger idx, BOOL *stop) {
+        if(cell.tabItem == self.selectedTabItem){
+            return YES;
+        }
+        return NO;
+    }];
+    if(index-1>=0){
+        [self selectTabItemAtIndex:index-1];
+    }
+}
+- (NSUInteger)numberOfTabItems{
+    return _itemCells.count;
+}
+-(NSArray<ZMTabItem *> *)tabItems{
+    NSMutableArray<ZMTabItem*> *tabItems = [NSMutableArray arrayWithCapacity:self.numberOfTabItems];
+    [_itemCells enumerateObjectsUsingBlock:^(ZMTabItemCell * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [tabItems addObject:obj.tabItem];
+    }];
+    return tabItems;
+}
+- (ZMTabItem*)selectedTabItem{
+    return self.selectedTabItemCell.tabItem;
+}
+#pragma mark - action
+- (void)onTabItemCellClick:(ZMTabItemCell*)sender{
+    [self _selectTabItemCell:sender];
+}
+#pragma mark - key&mouse
+- (void)moveLeft:(id)sender{
+    NSLog(@"%s",__func__);
+    if(self.window.firstResponder == self.addItem)
+        return;
+    [self selectPreviousTabViewItem:sender];
+    [self.window makeFirstResponder:self.selectedTabItemCell];
+}
+- (void)moveRight:(id)sender{
+    NSLog(@"%s",__func__);
+    if(self.window.firstResponder == self.addItem)
+        return;
+    [self selectNextTabViewItem:sender];
+    [self.window makeFirstResponder:self.selectedTabItemCell];
+}
 #pragma mark - drawRect
 - (void)drawRect:(NSRect)dirtyRect {
     if([self.tabBarStyle respondsToSelector:@selector(drawTabBarControl:inRect:)]){

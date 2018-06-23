@@ -10,7 +10,8 @@
 
 @class ZMTabBar;
 @class ZMTabItem;
-@interface ZMTabItemCell : NSView
-@property(weak)ZMTabBar* tabBar;
+@interface ZMTabItemCell : NSButton
+@property(weak) ZMTabBar* tabBar;
 @property(strong) ZMTabItem* tabItem;
+@property(nonatomic,assign) BOOL selected;
 @end
