@@ -9,6 +9,10 @@
 #import "ZMTabBar.h"
 #import "ZMTabItemCell.h"
 
+@interface ZMTabItem()
+@property(readwrite)ZMTabBar* tabBar;
+@end
+
 @implementation ZMTabItem
 - (id)initWithIdentifier:(NSString *)identifier{
     self = [super init];
@@ -17,6 +21,10 @@
     }
     return self;
 }
+- (nonnull id)copyWithZone:(nullable NSZone *)zone {
+    return self;
+}
+
 @end
 
 @interface ZMTabBar()
@@ -57,7 +65,6 @@
     Class<ZMTabBarStyle> styleClass = NSClassFromString(tabBarStyleName);
     self.style = [[(Class)styleClass alloc] init];
     self.tabBarStyle = self.style;
-    NSLog(@"%s %@",__func__,self.tabBarStyle);
 }
 
 - (NSButton*)addItem{
@@ -66,31 +73,41 @@
         [_addItem setImage:[NSImage imageNamed:NSImageNameAddTemplate]];
         [_addItem setImagePosition:NSImageOnly];
         [self addSubview:_addItem];
+        [_addItem setHidden:!self.showAddItem];
     }
     return _addItem;
 }
-
+- (void)setShowAddItem:(BOOL)showAddItem{
+    _showAddItem = showAddItem;
+    [_addItem setHidden:!showAddItem];
+}
 - (void)addTabItem:(ZMTabItem *)item{
     [self insertTabItem:item atIndex:[_itemCells count]];
 }
 - (void)insertTabItem:(ZMTabItem*)item atIndex:(NSUInteger)index{
     if(!item)
         return;
-    ZMTabItemCell* cell = [[ZMTabItemCell alloc] init];
+    ZMTabItemCell* cell = [[ZMTabItemCell alloc] initWithFrame:self.bounds];
     [cell setTabBar:self];
     [cell setTabItem:item];
+    [cell setTitle:item.title];
     [cell setTarget:self];
     [cell setAction:@selector(onTabItemCellClick:)];
     [self _insertTabItemCell:cell atIndex:index];
+    [item setTabBar:self];
 }
 - (void)_insertTabItemCell:(ZMTabItemCell*)cell atIndex:(NSUInteger)index{
     if(!cell || index > _itemCells.count)
         return;
     [_itemCells insertObject:cell atIndex:index];
     [self addSubview:cell];
+    if(self.tabBarStyle && [self.tabBarStyle respondsToSelector:@selector(tabBar:didAddItem:inRect:)]){
+        [self.tabBarStyle tabBar:self didAddItem:cell.tabItem inRect:cell.frame];
+    }
     [self.window recalculateKeyViewLoop];
     [self selectTabItemAtIndex:index];
     [self relayout];
+    NSAccessibilityPostNotification(self, NSAccessibilityLayoutChangedNotification);
 }
 
 - (void)removeTabItem:(ZMTabItem*)item{
@@ -103,14 +120,23 @@
     }
     [self _removeTabItemCell:theCell];
 }
+- (void)removeAllTabItem{
+    while(_itemCells.count){
+        [self _removeTabItemCell:_itemCells.firstObject];
+    }
+}
 - (void)_removeTabItemCell:(ZMTabItemCell*)cell{
     if(cell){
         cell.target = nil;
         cell.action = nil;
+        if([self.tabBarStyle respondsToSelector:@selector(tabBar:willRemoveItem:)]){
+            [self.tabBarStyle tabBar:self willRemoveItem:cell.tabItem];
+        }
         [cell removeFromSuperview];
         [_itemCells removeObject:cell];
         [self.window recalculateKeyViewLoop];
         [self relayout];
+        NSAccessibilityPostNotification(self, NSAccessibilityLayoutChangedNotification);
     }
 }
 
@@ -153,10 +179,11 @@
         context.duration = 0.5;
         CGFloat xPos = 0;
         for(ZMTabItemCell* cell in _itemCells){
-            cell.frame = ({
-                NSRect theRect = NSMakeRect(xPos, 0, singleWidth, singleHeight);
-                theRect;
-            });
+            NSRect theRect = NSMakeRect(xPos, 0, singleWidth, singleHeight);
+            cell.frame = theRect;
+            if(self.tabBarStyle && [self.tabBarStyle respondsToSelector:@selector(tabBar:itemFrameChange:inRect:)]){
+                [self.tabBarStyle tabBar:self itemFrameChange:cell.tabItem inRect:theRect];
+            }
             xPos += singleWidth;
         }
     } completionHandler:^{
@@ -275,11 +302,71 @@
 }
 #pragma mark - drawRect
 - (void)drawRect:(NSRect)dirtyRect {
-    if([self.tabBarStyle respondsToSelector:@selector(drawTabBarControl:inRect:)]){
-        [self.tabBarStyle drawTabBarControl:self inRect:dirtyRect];
+    if([self.tabBarStyle respondsToSelector:@selector(drawTabBar:inRect:)]){
+        [self.tabBarStyle drawTabBar:self inRect:dirtyRect];
     }
     else{
         NSRectFill(dirtyRect);
     }
+}
+#pragma mark - accessibility
+//- (BOOL)acceptsFirstResponder{
+//    return NO;
+//}
+- (BOOL)isAccessibilityElement{
+    return YES;
+}
+//- (BOOL)accessibilityIsIgnored{
+//    return NO;
+//}
+//- (NSArray*)accessibilityAttributeNames{
+//    static NSArray *attributes = nil;
+//    if(!attributes){
+//        attributes = [@[NSAccessibilityRoleAttribute,
+//                        NSAccessibilityRoleDescriptionAttribute,
+//                        NSAccessibilityDescriptionAttribute,
+//                        NSAccessibilityValueAttribute,
+//                        NSAccessibilityChildrenAttribute,
+//                        NSAccessibilityColumnCountAttribute] copy];
+//    }
+//    return attributes;
+//}
+//- (id)accessibilityAttributeValue:(NSString *)attribute{
+//    if([attribute isEqualToString:NSAccessibilityRoleAttribute]){
+//        return NSAccessibilityRoleAttribute;
+//    }
+//    else if([attribute isEqualToString:NSAccessibilityRoleDescriptionAttribute]){
+//        return [NSString stringWithFormat:@"group"];
+//    }
+//    else if([attribute isEqualToString:NSAccessibilityDescriptionAttribute]){
+//        return [NSString stringWithFormat:@"tab Bar, %ld tabs",_itemCells.count];
+//    }
+//    else if([attribute isEqualToString:NSAccessibilityValueAttribute]){
+//        return self;
+//    }
+//    else if([attribute isEqualToString:NSAccessibilityChildrenAttribute]){
+//        return NSAccessibilityUnignoredChildren(_itemCells);
+//    }
+//    else if([attribute isEqualToString:NSAccessibilityColumnCountAttribute]){
+//        return @(_itemCells.count);
+//    }
+//    else {
+//        NSLog(@"attribute = %@",attribute);
+//        return [super accessibilityAttributeValue:attribute];
+//    }
+//}
+- (NSAccessibilityRole)accessibilityRole{
+    NSLog(@"%s",__func__);
+    return NSAccessibilityTabGroupRole;
+}
+
+- (NSString *)accessibilityRoleDescription{
+    return [NSString stringWithFormat:@"group"];
+}
+- (NSString *)accessibilityLabel{
+    return [NSString stringWithFormat:@"tab Bar, %ld tabs",_itemCells.count];
+}
+- (NSArray*)accessibilityTabs{
+    return _itemCells;
 }
 @end

@@ -10,18 +10,19 @@
 #import "ZMTabBarStyle.h"
 
 NS_ASSUME_NONNULL_BEGIN
-@interface ZMTabItem : NSObject
+@class ZMTabBar;
+@interface ZMTabItem : NSObject<NSCopying>
 @property(copy) NSString* identifier;
 @property(copy) NSString* title;
 @property(strong)id representedObject;
+@property(readonly) ZMTabBar* tabBar;
 - (id)initWithIdentifier:(NSString*)identifier;
 @end
-
 
 @protocol ZMTabBarDelegate;
 IB_DESIGNABLE
 @interface ZMTabBar : NSView
-@property(assign)IBInspectable BOOL showAddItem;
+@property(nonatomic,assign)IBInspectable BOOL showAddItem;
 @property(readonly)NSUInteger numberOfTabItems;
 @property(readonly,strong)NSButton* addItem;
 @property(weak)IBOutlet id<ZMTabBarDelegate> delegate;
@@ -31,6 +32,7 @@ IB_DESIGNABLE
 - (void)addTabItem:(ZMTabItem*)item;
 - (void)insertTabItem:(ZMTabItem*)item atIndex:(NSUInteger)index;
 - (void)removeTabItem:(ZMTabItem*)item;
+- (void)removeAllTabItem;
 
 - (ZMTabItem*)tabItemAtIndex:(NSInteger)index;
 - (NSInteger)indexOfTabItemWithIdentifier:(id)identifier;

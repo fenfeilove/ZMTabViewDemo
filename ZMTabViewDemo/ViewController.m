@@ -18,6 +18,8 @@
     [self.view.window setAutorecalculatesKeyViewLoop:YES];
     // Do any additional setup after loading the view.
     NSLog(@"%@",_tabBar.tabBarStyleName);
+    self.tabBar.addItem.target = self;
+    self.tabBar.addItem.action = @selector(onAddCliek:);
 }
 
 - (void)setRepresentedObject:(id)representedObject {
@@ -28,11 +30,12 @@
 
 - (IBAction)onAddCliek:(id)sender{
     ZMTabItem* theItem = [[ZMTabItem alloc] initWithIdentifier:@"hello"];
-    [theItem setTitle:@"hello"];
+    [theItem setTitle:@"page"];
     [_tabBar addTabItem:theItem];
 }
 - (IBAction)onRemoveClick:(id)sender{
-    ZMTabItem* theItem = [_tabBar tabItemAtIndex:0];
-    [_tabBar removeTabItem:theItem];
+//    ZMTabItem* theItem = [_tabBar tabItemAtIndex:0];
+//    [_tabBar removeTabItem:theItem];
+    [_tabBar removeAllTabItem];
 }
 @end

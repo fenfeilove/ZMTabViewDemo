@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1527628B20E20BB70009BE83 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1527628920E20BB70009BE83 /* Main.storyboard */; };
 		15796FBD20DBA5B8006673FC /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 15796FBC20DBA5B8006673FC /* AppDelegate.m */; };
 		15796FC020DBA5B8006673FC /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 15796FBF20DBA5B8006673FC /* ViewController.m */; };
 		15796FC220DBA5B8006673FC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 15796FC120DBA5B8006673FC /* Assets.xcassets */; };
-		15796FC520DBA5B8006673FC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 15796FC320DBA5B8006673FC /* Main.storyboard */; };
 		15796FC820DBA5B8006673FC /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 15796FC720DBA5B8006673FC /* main.m */; };
 		15796FD820DBA603006673FC /* ZMTabViewKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 15796FD620DBA603006673FC /* ZMTabViewKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		15796FDB20DBA603006673FC /* ZMTabViewKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 15796FD420DBA603006673FC /* ZMTabViewKit.framework */; };
@@ -50,13 +50,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1527628A20E20BB70009BE83 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		15796FB820DBA5B8006673FC /* ZMTabViewDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZMTabViewDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		15796FBB20DBA5B8006673FC /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		15796FBC20DBA5B8006673FC /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		15796FBE20DBA5B8006673FC /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		15796FBF20DBA5B8006673FC /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		15796FC120DBA5B8006673FC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		15796FC420DBA5B8006673FC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		15796FC620DBA5B8006673FC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		15796FC720DBA5B8006673FC /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		15796FC920DBA5B8006673FC /* ZMTabViewDemo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ZMTabViewDemo.entitlements; sourceTree = "<group>"; };
@@ -116,7 +116,7 @@
 				15796FBE20DBA5B8006673FC /* ViewController.h */,
 				15796FBF20DBA5B8006673FC /* ViewController.m */,
 				15796FC120DBA5B8006673FC /* Assets.xcassets */,
-				15796FC320DBA5B8006673FC /* Main.storyboard */,
+				1527628920E20BB70009BE83 /* Main.storyboard */,
 				15796FC620DBA5B8006673FC /* Info.plist */,
 				15796FC720DBA5B8006673FC /* main.m */,
 				15796FC920DBA5B8006673FC /* ZMTabViewDemo.entitlements */,
@@ -237,7 +237,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				15796FC220DBA5B8006673FC /* Assets.xcassets in Resources */,
-				15796FC520DBA5B8006673FC /* Main.storyboard in Resources */,
+				1527628B20E20BB70009BE83 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -284,10 +284,10 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		15796FC320DBA5B8006673FC /* Main.storyboard */ = {
+		1527628920E20BB70009BE83 /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
-				15796FC420DBA5B8006673FC /* Base */,
+				1527628A20E20BB70009BE83 /* Base */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";

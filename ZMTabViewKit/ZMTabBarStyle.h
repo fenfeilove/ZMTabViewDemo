@@ -9,10 +9,19 @@
 #import <Cocoa/Cocoa.h>
 
 @class ZMTabBar;
+@class ZMTabItem;
 @protocol ZMTabBarStyle<NSObject>
+- (void)cleanUp;
 @optional
-- (void)drawTabBarControl:(ZMTabBar*)tabBar inRect:(NSRect)dirtyRect;
+- (void)drawTabBar:(ZMTabBar*)tabBar inRect:(NSRect)dirtyRect;
+- (void)tabBar:(ZMTabBar*)tabBar didAddItem:(ZMTabItem*)item inRect:(NSRect)rect;
+- (void)tabBar:(ZMTabBar*)tabBar itemFrameChange:(ZMTabItem*)item inRect:(NSRect)rect;
+- (void)tabBar:(ZMTabBar*)tabBar willRemoveItem:(ZMTabItem *)item;
+@end
 
+@protocol ZMTabBarDelegate;
+@protocol ZMCloseTabBarDelegate <ZMTabBarDelegate>
+- (void)tabBar:(ZMTabBar *)tabView closeTabItem:(ZMTabItem *)tabViewItem;
 @end
 
 @interface ZMDefaultTabBarStyle : NSObject<ZMTabBarStyle>
